@@ -137,13 +137,13 @@ def logout():
 ##############################################################################
 # General user routes:
 
-#TODO: HostMessaging  UserProfile  UserLikes
+# TODO: HostMessaging  UserProfile  UserLikes
 
 
 ###############################################################################
 # Listing routes:
 
-#TODO: homepage  individualListings
+# TODO: homepage  individualListings
 
 @app.get('/')
 def all_listings():
@@ -152,7 +152,6 @@ def all_listings():
     listings = Listing.query.all()
 
     return jsonify(listings)
-
 
 
 @app.get('/listing/<int:id>')
@@ -164,17 +163,15 @@ def single_listing(id):
     return jsonify(listing)
 
 
-
-
 # TODO: update image storage
 @app.post('/listing')
 def create_listing():
     """Create new listing for property"""
-    
+
     received = request.json
-    
+
     form = ListingAddForm(csrf_enabled=False, data=received)
-        
+
     if form.validate_on_submit():
         title = received["title"]
         description = received["description"]
@@ -193,13 +190,11 @@ def create_listing():
         db.session.add(listing)
 
 
-
 @app.patch('/listing/<int:id>')
 def edit_listing():
     """update listing"""
 
+
 @app.delete('/listing/<int:id>')
 def delete_listing():
     """Delete listing from database"""
-
-
