@@ -8,6 +8,8 @@ from sqlalchemy.exc import IntegrityError
 from forms import ListingAddForm, UserAddForm, LoginForm, MessageForm, CSRFProtectForm, UserEditForm
 from models import db, connect_db, User, Listing, LikedMessage, DEFAULT_HEADER_IMAGE_URL, DEFAULT_IMAGE_URL
 
+import jwt
+
 load_dotenv()
 
 CURR_USER_KEY = "curr_user"
@@ -29,36 +31,37 @@ connect_db(app)
 #############################################################################
 # User signup/login/logout
 
+#for reference, since we plan to serve front-end through react
+# most likely wont use or need these
+# @app.before_request
+# def add_user_to_g():
+#     """If we're logged in, add curr user to Flask global."""
 
-@app.before_request
-def add_user_to_g():
-    """If we're logged in, add curr user to Flask global."""
+#     if CURR_USER_KEY in session:
+#         g.user = User.query.get(session[CURR_USER_KEY])
 
-    if CURR_USER_KEY in session:
-        g.user = User.query.get(session[CURR_USER_KEY])
-
-    else:
-        g.user = None
-
-
-@app.before_request
-def add_csrf_to_g():
-    """add CSRFProtection Form to Flask global"""
-
-    g.csrf_form = CSRFProtectForm()
+#     else:
+#         g.user = None
 
 
-def do_login(user):
-    """Log in user."""
+# @app.before_request
+# def add_csrf_to_g():
+#     """add CSRFProtection Form to Flask global"""
 
-    session[CURR_USER_KEY] = user.id
+#     g.csrf_form = CSRFProtectForm()
 
+# api won't track login status
+# def do_login(user):
+#     """Log in user."""
 
-def do_logout():
-    """Log out user."""
+#     session[CURR_USER_KEY] = user.id
 
-    if CURR_USER_KEY in session:
-        del session[CURR_USER_KEY]
+# api won't track login status
+# def do_logout():
+#     """Log out user."""
+
+#     if CURR_USER_KEY in session:
+#         del session[CURR_USER_KEY]
 
 
 @app.route('/signup', methods=["GET", "POST"])
@@ -147,7 +150,8 @@ def logout():
 
 @app.get('/')
 def all_listings():
-    """Displays available properties"""
+    """returns JSON for all available properties
+    [{id, title, description, price, image[], user_id, rating}]"""
 
     listings = Listing.query.all()
 
@@ -156,7 +160,8 @@ def all_listings():
 
 @app.get('/listing/<int:id>')
 def single_listing(id):
-    """Displays detailed info on single listing"""
+    """returns detailed info on single listing as JSON
+    {id, title, description, price, image[], user_id, rating} """
 
     listing = Listing.query.get_or_404(id)
 
@@ -188,6 +193,9 @@ def create_listing():
         )
 
         db.session.add(listing)
+
+    return jsonify(listing)
+
 
 
 @app.patch('/listing/<int:id>')
