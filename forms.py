@@ -3,10 +3,10 @@ from wtforms import StringField, PasswordField, TextAreaField
 from wtforms.validators import DataRequired, Email, Length, Optional
 
 
-class MessageForm(FlaskForm):
-    """Form for adding/editing messages."""
+# class MessageForm(FlaskForm):
+#     """Form for adding/editing messages."""
 
-    text = TextAreaField('text', validators=[DataRequired()])
+#     text = TextAreaField('text', validators=[DataRequired()])
 
 
 class UserAddForm(FlaskForm):
@@ -15,7 +15,8 @@ class UserAddForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     email = StringField('E-mail', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[Length(min=6)])
-    image_url = StringField('(Optional) Image URL')
+    # image_url = StringField('(Optional) Image URL')
+
 
 class UserEditForm(FlaskForm):
     """Form for adding users."""
@@ -27,8 +28,6 @@ class UserEditForm(FlaskForm):
     #                         validators=[Optional()])
     bio = TextAreaField('text', validators=[Optional()])
     password = PasswordField('Password', validators=[Length(min=6)])
-
-
 
 
 class LoginForm(FlaskForm):

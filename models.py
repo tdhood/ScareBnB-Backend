@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 bcrypt = Bcrypt()
 db = SQLAlchemy()
 
+
 class User(db.Model):
     """User in the system."""
 
@@ -44,7 +45,7 @@ class User(db.Model):
     )
 
     @classmethod
-    def signup(cls, username, email, password, image_url=DEFAULT_IMAGE_URL):
+    def signup(cls, username, email, password):
         """Sign up user.
 
         Hashes password and adds user to system.
@@ -56,7 +57,6 @@ class User(db.Model):
             username=username,
             email=email,
             password=hashed_pwd,
-            image_url=image_url,
         )
 
         db.session.add(user)
@@ -82,3 +82,49 @@ class User(db.Model):
                 return user
 
         return False
+
+class Listing(db.Model):
+    """An individual message ("warble")."""
+
+    __tablename__ = 'listings'
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+    )
+
+    title = db.Column(
+        db.String(20),
+        nullable=False,
+    )
+
+    description = db.Column(
+        db.String(500),
+        nullable=False,
+    )
+
+    price = db.Column(
+        db.Integer,
+        nullable=False,
+    )
+
+    image_url = db.Column(
+        db.Text,
+        default=DEFAULT_IMAGE_URL,
+    )
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False,
+    )
+
+
+def connect_db(app):
+    """Connect this database to provided Flask app.
+
+    You should call this in your Flask app.
+    """
+
+    db.app = app
+    db.init_app(app)

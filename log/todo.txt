@@ -1,0 +1,19 @@
+- authentication
+
+- testing
+
+- listing outline
+
+- routes
+
+- photos
+
+- aws integration
+
+- seed data
+
+- front end
+
+further study
+    -map
+    -calender
