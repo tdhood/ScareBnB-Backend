@@ -1,12 +1,12 @@
 import os
 from dotenv import load_dotenv
 
-from flask import Flask, render_template, request, flash, redirect, session, g
+from flask import Flask, jsonify, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
-from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectForm, UserEditForm
-from models import db, connect_db, User, Message, LikedMessage, DEFAULT_HEADER_IMAGE_URL, DEFAULT_IMAGE_URL
+from forms import ListingAddForm, UserAddForm, LoginForm, MessageForm, CSRFProtectForm, UserEditForm
+from models import db, connect_db, User, Listing, LikedMessage, DEFAULT_HEADER_IMAGE_URL, DEFAULT_IMAGE_URL
 
 load_dotenv()
 
@@ -136,3 +136,70 @@ def logout():
 
 ##############################################################################
 # General user routes:
+
+#TODO: HostMessaging  UserProfile  UserLikes
+
+
+###############################################################################
+# Listing routes:
+
+#TODO: homepage  individualListings
+
+@app.get('/')
+def all_listings():
+    """Displays available properties"""
+
+    listings = Listing.query.all()
+
+    return jsonify(listings)
+
+
+
+@app.get('/listing/<int:id>')
+def single_listing(id):
+    """Displays detailed info on single listing"""
+
+    listing = Listing.query.get_or_404(id)
+
+    return jsonify(listing)
+
+
+
+
+# TODO: update image storage
+@app.post('/listing')
+def create_listing():
+    """Create new listing for property"""
+    
+    received = request.json
+    
+    form = ListingAddForm(csrf_enabled=False, data=received)
+        
+    if form.validate_on_submit():
+        title = received["title"]
+        description = received["description"]
+        location = received["location"]
+        price = received["price"]
+        image_url = received["image_url"]
+
+        listing = Listing(
+            title=title,
+            description=description,
+            location=location,
+            price=price,
+            image_url=image_url
+        )
+
+        db.session.add(listing)
+
+
+
+@app.patch('/listing/<int:id>')
+def edit_listing():
+    """update listing"""
+
+@app.delete('/listing/<int:id>')
+def delete_listing():
+    """Delete listing from database"""
+
+

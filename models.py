@@ -44,6 +44,11 @@ class User(db.Model):
         nullable=False,
     )
 
+    isHost = db.Column(
+        db.Boolean,
+        nullable=False,
+    )
+
     @classmethod
     def signup(cls, username, email, password):
         """Sign up user.
@@ -84,7 +89,7 @@ class User(db.Model):
         return False
 
 class Listing(db.Model):
-    """An individual message ("warble")."""
+    """An individual property listings."""
 
     __tablename__ = 'listings'
 
@@ -116,6 +121,11 @@ class Listing(db.Model):
     user_id = db.Column(
         db.Integer,
         db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False,
+    )
+
+    rating = db.Column(
+        db.Integer,
         nullable=False,
     )
 
