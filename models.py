@@ -140,6 +140,9 @@ class Listing(db.Model):
         nullable=False,
     )
 
+    @classmethod
+    def serialize
+
 
 def connect_db(app):
     """Connect this database to provided Flask app.
