@@ -20,6 +20,7 @@ app = Flask(__name__)
 # if not set there, use development local db.
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     os.environ['DATABASE_URL'].replace("postgres://", "postgresql://"))
+print(os.environ['DATABASE_URL'])    
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
@@ -180,7 +181,7 @@ def create_listing():
     if form.validate_on_submit():
         title = received["title"]
         description = received["description"]
-        location = received["location"]
+        # location = received["location"]
         price = received["price"]
         image_url = received["image_url"]
 
@@ -198,11 +199,11 @@ def create_listing():
 
 
 
-@app.patch('/listing/<int:id>')
-def edit_listing():
-    """update listing"""
+# @app.patch('/listing/<int:id>')
+# def edit_listing():
+#     """update listing"""
 
 
-@app.delete('/listing/<int:id>')
-def delete_listing():
+# @app.delete('/listing/<int:id>')
+# def delete_listing():
     """Delete listing from database"""
