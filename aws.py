@@ -3,11 +3,11 @@ import boto3
 from botocore.exceptions import ClientError
 import os
 
-BUCKET = "share-b-n-b"
+ALEX_BUCKET = "share-b-n-b"
 TAYLOR_BUCKET = "kestrelbucket"
 
 
-def upload_file(file_name, bucket=TAYLOR_BUCKET, object_name=None):
+def upload_file(file_name, bucket=ALEX_BUCKET, object_name=None):
     """Upload a file to an S3 bucket
 
     :param file_name: File to upload
@@ -23,12 +23,15 @@ def upload_file(file_name, bucket=TAYLOR_BUCKET, object_name=None):
     # Upload the file
     s3_client = boto3.client('s3')
     try:
-        response = s3_client.upload_file(file_name, bucket, object_name)
-        print(response)
+        response = s3_client.upload_file(file_name, bucket, object_name, ExtraArgs={'ContentType': 'image/jpeg'})
+        print("response=", response)
+        print("file name =", file_name)
+        print("bucket =", bucket)
+        print("object name =", object_name)
     except ClientError as e:
         logging.error(e)
         return False
-    return True
+    return f'https://{bucket}.s3.us-west-1.amazonaws.com/{object_name}'
 
 # def download_file(file_name, bucket, object_name):
 #     s3 = boto3.client('s3')
@@ -39,12 +42,13 @@ def upload_file(file_name, bucket=TAYLOR_BUCKET, object_name=None):
 #     with open('FILE_NAME', 'wb') as f:
 #         s3.download_fileobj('BUCKET_NAME', 'OBJECT_NAME', f)
 
-def show_image(bucket=TAYLOR_BUCKET):
+def show_image(bucket=ALEX_BUCKET):
     s3_client = boto3.client('s3')
     public_urls = []
     try:
         for item in s3_client.list_objects(Bucket=bucket)['Contents']:
-            presigned_url = s3_client.generate_presigned_url('get_object', Params = {'Bucket': bucket, 'Key': item['Key']}, ExpiresIn = 10000)
+            print(item)
+            presigned_url = s3_client.generate_presigned_url('get_object', Params = {'Bucket': bucket, 'Key': item['Key']})
             public_urls.append(presigned_url)
     except Exception as e:
         pass

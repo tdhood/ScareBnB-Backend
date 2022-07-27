@@ -4,9 +4,11 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
+from traitlets import ObjectName
 
 from forms import ListingAddForm, UserAddForm, LoginForm
 from models import db, connect_db, User, Listing
+from aws import upload_file
 
 # import jwt
 
@@ -20,7 +22,7 @@ app = Flask(__name__)
 # if not set there, use development local db.
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     os.environ['DATABASE_URL'].replace("postgres://", "postgresql://"))
-print(os.environ['DATABASE_URL'])    
+print(os.environ['DATABASE_URL'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
@@ -28,6 +30,8 @@ app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
+
+# BASE_IMAGE_URL = 'https://share-b-n-b.s3.us-west-1.amazonaws.com/'
 
 #############################################################################
 # User signup/login/logout
@@ -166,8 +170,9 @@ def single_listing(id):
     {id, title, description, price, image[], user_id, rating} """
 
     listing = Listing.query.get_or_404(id)
+    serialized = listing.serialize()
 
-    return jsonify(listing)
+    return jsonify(listing=serialized)
 
 
 # TODO: update image storage
@@ -182,9 +187,12 @@ def create_listing():
     if form.validate_on_submit():
         title = received["title"]
         description = received["description"]
-        # location = received["location"]
+        location = received["location"]
         price = received["price"]
-        image_url = received["image_url"]
+        image_file = received["image_file"]
+        if(upload_file(image_file)):
+            image_url = upload_file(image_file)
+            #TODO: default image
 
         listing = Listing(
             title=title,
