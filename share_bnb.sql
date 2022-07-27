@@ -12,7 +12,7 @@ CREATE DATABASE share_bnb;
 \prompt 'Return for yes or control-C to cancel > ' foo
 
 DROP DATABASE share_bnb_test;
-CREATE DATABASE Share_bnb_test;
+CREATE DATABASE share_bnb_test;
 \connect share_bnb_test
 
 \i share_bnb-schema.sql

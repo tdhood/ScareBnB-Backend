@@ -114,6 +114,11 @@ class Listing(db.Model):
         nullable=False,
     )
 
+    location = db.Column(
+        db.String(20),
+        nullable=False,
+    )
+
     description = db.Column(
         db.String(500),
         nullable=False,
@@ -140,8 +145,18 @@ class Listing(db.Model):
         nullable=False,
     )
 
-    @classmethod
-    def serialize
+    def serialize(self):
+        """Serialize to dictionary."""
+
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "price": self.price,
+            "image_url": self.image_url,
+            "user_id": self.user_id,
+            "rating": self.rating,
+        }
 
 
 def connect_db(app):

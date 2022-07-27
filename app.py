@@ -155,8 +155,9 @@ def all_listings():
     [{id, title, description, price, image[], user_id, rating}]"""
 
     listings = Listing.query.all()
+    serialized = [l.serialize() for l in listings]
 
-    return jsonify(listings)
+    return jsonify(listings=serialized)
 
 
 @app.get('/listing/<int:id>')
