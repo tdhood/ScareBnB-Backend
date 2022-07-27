@@ -5,10 +5,10 @@ from flask import Flask, jsonify, render_template, request, flash, redirect, ses
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
-from forms import ListingAddForm, UserAddForm, LoginForm, MessageForm, CSRFProtectForm, UserEditForm
-from models import db, connect_db, User, Listing, LikedMessage, DEFAULT_HEADER_IMAGE_URL, DEFAULT_IMAGE_URL
+from forms import ListingAddForm, UserAddForm, LoginForm
+from models import db, connect_db, User, Listing
 
-import jwt
+# import jwt
 
 load_dotenv()
 

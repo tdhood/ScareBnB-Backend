@@ -1,7 +1,7 @@
 # TODO: populate with location and user starter data
 
-from app import app
-from models import db, User, Listing
+from app import db
+from models import Listing
 
 
 db.drop_all()

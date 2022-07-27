@@ -30,6 +30,16 @@ class User(db.Model):
         unique=True,
     )
 
+    first_name = db.Column(
+        db.Text,
+        nullable=False,
+    )
+
+    last_name = db.Column(
+        db.Text,
+        nullable=False
+    )
+
     # image_url = db.Column(
     #     db.Text,
     #     default=DEFAULT_IMAGE_URL,
@@ -44,7 +54,7 @@ class User(db.Model):
         nullable=False,
     )
 
-    isHost = db.Column(
+    is_host = db.Column(
         db.Boolean,
         nullable=False,
     )
@@ -88,6 +98,7 @@ class User(db.Model):
 
         return False
 
+
 class Listing(db.Model):
     """An individual property listings."""
 
@@ -115,7 +126,7 @@ class Listing(db.Model):
 
     image_url = db.Column(
         db.Text,
-        default=DEFAULT_IMAGE_URL,
+        nullable=False
     )
 
     user_id = db.Column(
