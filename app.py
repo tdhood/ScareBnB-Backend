@@ -11,7 +11,7 @@ from forms import ListingAddForm, UserAddForm, LoginForm
 from models import db, connect_db, User, Listing
 from aws import upload_file
 from botocore.exceptions import ClientError
-# from filestorage import store
+
 
 import jwt
 
@@ -52,13 +52,6 @@ connect_db(app)
 
 #     else:
 #         g.user = None
-
-
-# @app.before_request
-# def add_csrf_to_g():
-#     """add CSRFProtection Form to Flask global"""
-
-#     g.csrf_form = CSRFProtectForm()
 
 # api won't track login status
 # def do_login(user):
@@ -195,38 +188,29 @@ def single_listing(id):
     return jsonify(listing=serialized)
 
 
-# TODO: update image storage
 
 @app.post('/listing')
 def create_listing():
     """Create new listing for property"""
-    print("post listing")
 
-    print('request', request)
-    print('request.form', request.form['data'])
     received = json.loads(request.form.get('data'))
     files = request.files['files']
     image_url = ''
-    form = ListingAddForm(csrf_enabled=False, data=received)
-    print("data=", received)
-    print("title=", received["title"])
-    print('form.data=', form.data)
-    print('files=', files)
-    print('files.name=', files.filename)
+    # form = ListingAddForm(csrf_enabled=False, data=received)
 
-    if True:
-        print("form valid")
+
+    if True: #FIXME: validate data being received
         title = received["title"]
         description = received["description"]
         location = received["location"]
         price = received["price"]
         user_id = received["user_id"]
         rating = received["rating"]
-        
+
         try:
             image_url = upload_file(files)
-            #TODO: default image
         except ClientError as e:
+            #TODO: default image
             print(e)
 
         listing = Listing(
@@ -248,7 +232,7 @@ def create_listing():
 
         return jsonify(listing=serialized)
 
-    return jsonify(errors=form.errors)
+    #return jsonify(errors=form.errors) FIXME:
 
 
 

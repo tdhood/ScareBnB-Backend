@@ -1,5 +1,6 @@
+from wsgiref.validate import validator
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, TextAreaField, IntegerField, BooleanField
+from wtforms import StringField, PasswordField, TextAreaField, IntegerField, BooleanField, FileField
 from wtforms.validators import DataRequired, InputRequired, Email, Length, Optional
 
 
@@ -62,5 +63,6 @@ class ListingAddForm(FlaskForm):
     image_file = StringField('image_file', validators=[Optional()])
     rating = IntegerField('Rating', validators=[Optional()])
     user_id = IntegerField('User id', validators=[InputRequired()])
+    files = FileField('Files', validators=[])
 
 

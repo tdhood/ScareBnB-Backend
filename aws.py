@@ -24,22 +24,11 @@ def upload_file(file_name, bucket=BUCKET, object_name=None):
     # If S3 object_name was not specified, use file_name
     if object_name is None:
         object_name = str(uuid.uuid4())
-        print("object_name", object_name)
 
-    # Upload the file
     s3_client = boto3.client('s3')
-    # with open(file_name, "rb") as f:
-        # s3.upload_fileobj(f, "BUCKET_NAME", "OBJECT_NAME")
-    print("file_name=", file_name)
 
     try:
-        # with open(file_name, "rb") as f:
         response = s3_client.put_object(Body=file_name, Bucket=bucket, Key=object_name, ContentType='image/jpeg')
-        # print("f", f)
-        print("response=", response)
-        print("file name =", file_name)
-        print("bucket =", bucket)
-        print("object name =", object_name)
         image = (f'https://{bucket}.s3.amazonaws.com/{object_name}')
     except ClientError as e:
         logging.error(e)
