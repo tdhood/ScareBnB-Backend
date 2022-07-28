@@ -7,6 +7,8 @@ from flask_debugtoolbar import DebugToolbarExtension
 from forms import ListingAddForm, UserAddForm, LoginForm
 from models import db, connect_db, User, Listing
 from aws import upload_file
+from botocore.exceptions import ClientError
+# from filestorage import store
 
 import jwt
 
@@ -214,10 +216,12 @@ def create_listing():
         description = received["description"]
         location = received["location"]
         price = received["price"]
-
-        if(upload_file(files.filename)):
+        
+        try:
             image_url = upload_file(files)
             #TODO: default image
+        except ClientError as e:
+            print(e)
 
         listing = Listing(
             title=title,
