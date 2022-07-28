@@ -2,7 +2,13 @@
 
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
+import os
+from dotenv import load_dotenv
+import jwt
 
+load_dotenv()
+
+secret_key= os.environ['SECRET_KEY']
 bcrypt = Bcrypt()
 db = SQLAlchemy()
 
@@ -73,9 +79,10 @@ class User(db.Model):
             email=email,
             password=hashed_pwd,
         )
+        token = User.token(username)
 
         db.session.add(user)
-        return user
+        return [user, token]
 
     @classmethod
     def authenticate(cls, username, password):
@@ -94,9 +101,31 @@ class User(db.Model):
         if user:
             is_auth = bcrypt.check_password_hash(user.password, password)
             if is_auth:
-                return user
+                token = User.token(username)
+                return [user, token]
 
         return False
+    
+    @classmethod
+    def create_token(cls, username):
+        """Create token for user"""
+        token = jwt({'username': username }, secret_key)
+        return token
+    
+    def serialize(self):
+        """Serialize to dictionary."""
+
+        return {
+            "id": self.id,
+            "username": self.username,
+            "password": self.password,
+            "email": self.email,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "bio": self.bio,
+            "is_host": self.is_host
+        }
+
 
 
 class Listing(db.Model):

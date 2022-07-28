@@ -1,16 +1,14 @@
 import os
 from dotenv import load_dotenv
 
-from flask import Flask, jsonify, render_template, request, flash, redirect, session, g
+from flask import Flask, jsonify, render_template, request, flash, redirect
 from flask_debugtoolbar import DebugToolbarExtension
-from sqlalchemy.exc import IntegrityError
-from traitlets import ObjectName
 
 from forms import ListingAddForm, UserAddForm, LoginForm
 from models import db, connect_db, User, Listing
 from aws import upload_file
 
-# import jwt
+import jwt
 
 load_dotenv()
 
@@ -35,6 +33,8 @@ connect_db(app)
 
 #############################################################################
 # User signup/login/logout
+
+
 
 #for reference, since we plan to serve front-end through react
 # most likely wont use or need these
@@ -69,43 +69,58 @@ connect_db(app)
 #         del session[CURR_USER_KEY]
 
 
-@app.route('/signup', methods=["GET", "POST"])
-def signup():
-    """Handle user signup.
+# @app.route('/signup', methods=["GET", "POST"])
+# def signup():
+#     """Handle user signup.
 
-    Create new user and add to DB. Redirect to home page.
+#     Create new user and add to DB. Redirect to home page.
 
-    If form not valid, present form.
+#     If form not valid, present form.
 
-    If the there already is a user with that username: flash message
-    and re-present form.
-    """
+#     If the there already is a user with that username: flash message
+#     and re-present form.
+#     """
 
-    if CURR_USER_KEY in session:
-        del session[CURR_USER_KEY]
-    form = UserAddForm()
+#     # if CURR_USER_KEY in session:
+#     #     del session[CURR_USER_KEY]
+#     form = UserAddForm()
 
-    if form.validate_on_submit():
-        try:
-            user = User.signup(
-                username=form.username.data,
-                password=form.password.data,
-                email=form.email.data,
-                # image_url=form.image_url.data or User.image_url.default.arg,
-            )
-            db.session.commit()
+#     if form.validate_on_submit():
+#         try:
+#             user = User.signup(
+#                 username=form.username.data,
+#                 password=form.password.data,
+#                 email=form.email.data,
+#                 first_name=form.first_name.data,
+#                 last_name=form.last_name.data,
+#                 bio=form.bio.data,
+#                 is_host=form.is_host.data
 
-        except IntegrityError:
-            flash("Username already taken", 'danger')
-            return render_template('users/signup.html', form=form)
+#                 # image_url=form.image_url.data or User.image_url.default.arg,
+#             )
+#             db.session.commit()
 
-        do_login(user)
+#         # except IntegrityError:
+#         #     flash("Username already taken", 'danger')
+#         #     return render_template('users/signup.html', form=form)
 
-        return redirect("/")
 
-    else:
-        return render_template('users/signup.html', form=form)
+#         # return redirect("/")
 
+#     else:
+#         return render_template('users/signup.html', form=form)
+
+# @app.route('/register', methods=['GET', 'POST'])
+# def signup_user():  
+#  data = request.get_json()  
+
+#  hashed_password = generate_password_hash(data['password'], method='sha256')
+ 
+#  new_user = Users(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password, admin=False) 
+#  db.session.add(new_user)  
+#  db.session.commit()    
+
+#  return jsonify({'message': 'registered successfully'})
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
@@ -181,15 +196,19 @@ def create_listing():
     """Create new listing for property"""
 
     received = request.json
-
+    image_url = ''
     form = ListingAddForm(csrf_enabled=False, data=received)
-
+    print("data=", received)
+    print('form=', form.data)
+    
     if form.validate_on_submit():
+        print("form valid")
         title = received["title"]
         description = received["description"]
         location = received["location"]
         price = received["price"]
         image_file = received["image_file"]
+
         if(upload_file(image_file)):
             image_url = upload_file(image_file)
             #TODO: default image
@@ -202,9 +221,14 @@ def create_listing():
             image_url=image_url
         )
 
+        print(listing)
         db.session.add(listing)
 
-    return jsonify(listing)
+        serialized = listing.serialize()
+
+        return jsonify(listing=serialized)
+    
+    return jsonify(errors=form.errors)
 
 
 

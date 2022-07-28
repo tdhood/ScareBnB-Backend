@@ -2,12 +2,14 @@ import logging
 import boto3
 from botocore.exceptions import ClientError
 import os
+from dotenv import load_dotenv
 
-ALEX_BUCKET = "share-b-n-b"
-TAYLOR_BUCKET = "kestrelbucket"
+load_dotenv()
+# ALEX_BUCKET = "share-b-n-b"
+# TAYLOR_BUCKET = "kestrelbucket"
+BUCKET = os.environ['BUCKET']
 
-
-def upload_file(file_name, bucket=ALEX_BUCKET, object_name=None):
+def upload_file(file_name, bucket=BUCKET, object_name=None):
     """Upload a file to an S3 bucket
 
     :param file_name: File to upload
@@ -42,12 +44,11 @@ def upload_file(file_name, bucket=ALEX_BUCKET, object_name=None):
 #     with open('FILE_NAME', 'wb') as f:
 #         s3.download_fileobj('BUCKET_NAME', 'OBJECT_NAME', f)
 
-def show_image(bucket=ALEX_BUCKET):
+def show_image(bucket=BUCKET):
     s3_client = boto3.client('s3')
     public_urls = []
     try:
         for item in s3_client.list_objects(Bucket=bucket)['Contents']:
-            print(item)
             presigned_url = s3_client.generate_presigned_url('get_object', Params = {'Bucket': bucket, 'Key': item['Key']})
             public_urls.append(presigned_url)
     except Exception as e:

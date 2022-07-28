@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, TextAreaField, IntegerField
-from wtforms.validators import DataRequired, Email, Length, Optional
+from wtforms import StringField, PasswordField, TextAreaField, IntegerField, BooleanField
+from wtforms.validators import DataRequired, InputRequired, Email, Length, Optional
 
 
 # class MessageForm(FlaskForm):
@@ -16,8 +16,12 @@ class UserAddForm(FlaskForm):
         csrf = False
 
     username = StringField('Username', validators=[DataRequired()])
-    email = StringField('E-mail', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[Length(min=6)])
+    email = StringField('E-mail', validators=[DataRequired(), Email()])
+    first_name = StringField('First Name',validators=[DataRequired()])
+    last_name = StringField('Last Name',validators=[DataRequired()])
+    bio = StringField('Bio', validators=[Optional()])
+    is_host = BooleanField('Host', validators=[DataRequired()])
     # image_url = StringField('(Optional) Image URL')
 
 
@@ -51,10 +55,10 @@ class ListingAddForm(FlaskForm):
     class Meta:
         csrf = False
 
-    title = StringField('Title', validators=[DataRequired()])
-    description = TextAreaField('Description', validators=[DataRequired(), Email()])
-    location = StringField('Location', validators=[DataRequired()])
-    price = IntegerField('Price', validators=[DataRequired()])
-    image_url = StringField('(Optional) Image URL')
+    title = StringField('Title', validators=[InputRequired()])
+    description = TextAreaField('Description', validators=[InputRequired()])
+    location = StringField('Location', validators=[InputRequired()])
+    price = IntegerField('Price', validators=[InputRequired()])
+    image_file = StringField('image_file', validators=[Optional()])
 
 
