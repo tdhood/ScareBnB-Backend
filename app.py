@@ -195,7 +195,9 @@ def single_listing(id):
 def create_listing():
     """Create new listing for property"""
 
-    received = request.json
+    received = request.contentz
+    print('request', request)
+    files = request.files['image_file']
     image_url = ''
     form = ListingAddForm(csrf_enabled=False, data=received)
     print("data=", received)
@@ -207,10 +209,9 @@ def create_listing():
         description = received["description"]
         location = received["location"]
         price = received["price"]
-        image_file = received["image_file"]
 
-        if(upload_file(image_file)):
-            image_url = upload_file(image_file)
+        if(upload_file(files)):
+            image_url = upload_file(files)
             #TODO: default image
 
         listing = Listing(
