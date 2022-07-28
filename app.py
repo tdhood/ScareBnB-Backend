@@ -1,3 +1,6 @@
+from csv import unregister_dialect
+from email.base64mime import header_encode
+from email.headerregistry import ContentTypeHeader
 import os
 from dotenv import load_dotenv
 
@@ -193,6 +196,7 @@ def single_listing(id):
 
 
 # TODO: update image storage
+
 @app.post('/listing')
 def create_listing():
     """Create new listing for property"""
@@ -216,6 +220,8 @@ def create_listing():
         description = received["description"]
         location = received["location"]
         price = received["price"]
+        user_id = received["user_id"]
+        rating = received["rating"]
         
         try:
             image_url = upload_file(files)
@@ -228,12 +234,15 @@ def create_listing():
             description=description,
             location=location,
             price=price,
-            image_url=image_url
+            image_url=image_url,
+            user_id=user_id,
+            rating=rating
         )
 
 
         print(listing)
         db.session.add(listing)
+        db.session.commit()
 
         serialized = listing.serialize()
 

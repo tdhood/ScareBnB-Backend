@@ -60,5 +60,7 @@ class ListingAddForm(FlaskForm):
     location = StringField('Location', validators=[InputRequired()])
     price = IntegerField('Price', validators=[InputRequired()])
     image_file = StringField('image_file', validators=[Optional()])
+    rating = IntegerField('Rating', validators=[Optional()])
+    user_id = IntegerField('User id', validators=[InputRequired()])
 
 

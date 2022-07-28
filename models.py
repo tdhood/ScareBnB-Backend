@@ -136,6 +136,7 @@ class Listing(db.Model):
     id = db.Column(
         db.Integer,
         primary_key=True,
+        autoincrement=True,
     )
 
     title = db.Column(
