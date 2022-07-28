@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-from flask import Flask, jsonify, render_template, request, flash, redirect
+from flask import Flask, jsonify, render_template, request, flash, redirect, json
 from flask_debugtoolbar import DebugToolbarExtension
 
 from forms import ListingAddForm, UserAddForm, LoginForm
@@ -111,14 +111,14 @@ connect_db(app)
 #         return render_template('users/signup.html', form=form)
 
 # @app.route('/register', methods=['GET', 'POST'])
-# def signup_user():  
-#  data = request.get_json()  
+# def signup_user():
+#  data = request.get_json()
 
 #  hashed_password = generate_password_hash(data['password'], method='sha256')
- 
-#  new_user = Users(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password, admin=False) 
-#  db.session.add(new_user)  
-#  db.session.commit()    
+
+#  new_user = Users(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password, admin=False)
+#  db.session.add(new_user)
+#  db.session.commit()
 
 #  return jsonify({'message': 'registered successfully'})
 
@@ -194,23 +194,28 @@ def single_listing(id):
 @app.post('/listing')
 def create_listing():
     """Create new listing for property"""
+    print("post listing")
 
-    received = request.contentz
     print('request', request)
-    files = request.files['image_file']
+    print('request.form', request.form['data'])
+    received = json.loads(request.form.get('data'))
+    files = request.files['files']
     image_url = ''
     form = ListingAddForm(csrf_enabled=False, data=received)
     print("data=", received)
-    print('form=', form.data)
-    
-    if form.validate_on_submit():
+    print("title=", received["title"])
+    print('form.data=', form.data)
+    print('files=', files)
+    print('files.name=', files.filename)
+
+    if True:
         print("form valid")
         title = received["title"]
         description = received["description"]
         location = received["location"]
         price = received["price"]
 
-        if(upload_file(files)):
+        if(upload_file(files.filename)):
             image_url = upload_file(files)
             #TODO: default image
 
@@ -222,13 +227,14 @@ def create_listing():
             image_url=image_url
         )
 
+
         print(listing)
         db.session.add(listing)
 
         serialized = listing.serialize()
 
         return jsonify(listing=serialized)
-    
+
     return jsonify(errors=form.errors)
 
 
