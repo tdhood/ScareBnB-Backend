@@ -20,6 +20,7 @@ def upload_file(file_name, bucket=BUCKET, object_name=None):
     :param object_name: S3 object name. If not specified then file_name is used
     :return: True if file was uploaded, else False
     """
+    print("bucket", bucket)
 
     # If S3 object_name was not specified, use file_name
     if object_name is None:

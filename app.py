@@ -11,6 +11,7 @@ from forms import ListingAddForm, UserAddForm, LoginForm
 from models import db, connect_db, User, Listing
 from aws import upload_file
 from botocore.exceptions import ClientError
+from flask_cors import CORS
 
 
 import jwt
@@ -20,6 +21,7 @@ load_dotenv()
 CURR_USER_KEY = "curr_user"
 
 app = Flask(__name__)
+CORS(app)
 
 # Get DB_URI from environ variable (useful for production/testing) or,
 # if not set there, use development local db.
