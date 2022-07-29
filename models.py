@@ -65,22 +65,40 @@ class User(db.Model):
         nullable=False,
     )
 
+    def serialize(self):
+        """Serialize to dictionary."""
+
+        return {
+            "id": self.id,
+            "username": self.username,
+            "password": self.password,
+            "email": self.email,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "bio": self.bio,
+            "is_host": self.is_host
+        }
+
     @classmethod
-    def signup(cls, username, email, password):
+    def signup(cls, username, email, password, first_name, last_name, bio, is_host=False):
         """Sign up user.
 
         Hashes password and adds user to system.
         """
-
+        print('password', password)
         hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
-
+        print('hashed', hashed_pwd)
         user = User(
             username=username,
             email=email,
             password=hashed_pwd,
+            first_name=first_name,
+            last_name=last_name,
+            bio=bio,
+            is_host=is_host
         )
-        token = User.token(username)
-
+        token = jwt.encode({'username': username }, secret_key)
+        
         db.session.add(user)
         return [user, token]
 
@@ -109,22 +127,11 @@ class User(db.Model):
     @classmethod
     def create_token(cls, username):
         """Create token for user"""
+        print('create_token')
+        print('secret key', secret_key)
         token = jwt({'username': username }, secret_key)
         return token
     
-    def serialize(self):
-        """Serialize to dictionary."""
-
-        return {
-            "id": self.id,
-            "username": self.username,
-            "password": self.password,
-            "email": self.email,
-            "first_name": self.first_name,
-            "last_name": self.last_name,
-            "bio": self.bio,
-            "is_host": self.is_host
-        }
 
 
 

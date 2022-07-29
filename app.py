@@ -67,46 +67,63 @@ connect_db(app)
 #         del session[CURR_USER_KEY]
 
 
-# @app.route('/signup', methods=["GET", "POST"])
-# def signup():
-#     """Handle user signup.
+@app.route('/signup', methods=["GET", "POST"])
+def signup():
+    print('signup route')
+    """Handle user signup.
 
-#     Create new user and add to DB. Redirect to home page.
+    Create new user and add to DB. Redirect to home page.
 
-#     If form not valid, present form.
+    If form not valid, present form.
 
-#     If the there already is a user with that username: flash message
-#     and re-present form.
-#     """
+    If the there already is a user with that username: flash message
+    and re-present form.
+    """
 
-#     # if CURR_USER_KEY in session:
-#     #     del session[CURR_USER_KEY]
-#     form = UserAddForm()
+    # if CURR_USER_KEY in session:
+    #     del session[CURR_USER_KEY]
+    received = request.json
+    print('received', received)
+    form = UserAddForm(csrf_enabled=False, data=received)
+    print('form=', form)
+    print("username", received["username"])
+    print('password', received["password"])
 
-#     if form.validate_on_submit():
-#         try:
-#             user = User.signup(
-#                 username=form.username.data,
-#                 password=form.password.data,
-#                 email=form.email.data,
-#                 first_name=form.first_name.data,
-#                 last_name=form.last_name.data,
-#                 bio=form.bio.data,
-#                 is_host=form.is_host.data
+    if form.validate_on_submit():
+        username = received["username"]
+        password = received["password"]
+        email = received["email"]
+        first_name = received["first_name"]
+        last_name = received["last_name"]
+        bio = received["bio"]
+        is_host = False
+        print("username", username)
 
-#                 # image_url=form.image_url.data or User.image_url.default.arg,
-#             )
-#             db.session.commit()
+        try:
+            user = User.signup(
+                username=username,
+                password=password,
+                email=email,
+                first_name=first_name,
+                last_name=last_name,
+                bio=bio,
+                is_host=is_host,
+                # image_url=form.image_url.data or User.image_url.default.arg,
+            )
+            db.session.commit()
 
-#         # except IntegrityError:
-#         #     flash("Username already taken", 'danger')
-#         #     return render_template('users/signup.html', form=form)
+            serialized = user[0].serialize()
+        
+            return jsonify(user=serialized, token=user[1]) 
 
+        except ClientError as e:
+            #TODO: default image
+            return jsonify(e)
+        
+    return jsonify(errors=form.errors)
 
-#         # return redirect("/")
-
-#     else:
-#         return render_template('users/signup.html', form=form)
+        
+    
 
 # @app.route('/register', methods=['GET', 'POST'])
 # def signup_user():
@@ -114,7 +131,10 @@ connect_db(app)
 
 #  hashed_password = generate_password_hash(data['password'], method='sha256')
 
-#  new_user = Users(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password, admin=False)
+#  new_user = Users( 
+#     first_name=data['first name'], 
+#     password=hashed_password, 
+#     is_host=False)
 #  db.session.add(new_user)
 #  db.session.commit()
 

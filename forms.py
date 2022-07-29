@@ -22,7 +22,7 @@ class UserAddForm(FlaskForm):
     first_name = StringField('First Name',validators=[DataRequired()])
     last_name = StringField('Last Name',validators=[DataRequired()])
     bio = StringField('Bio', validators=[Optional()])
-    is_host = BooleanField('Host', validators=[DataRequired()])
+    is_host = BooleanField('Host', validators=[Optional()])
     # image_url = StringField('(Optional) Image URL')
 
 
