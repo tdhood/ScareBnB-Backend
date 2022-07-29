@@ -98,7 +98,7 @@ class User(db.Model):
             is_host=is_host
         )
         token = jwt.encode({'username': username }, secret_key)
-        
+
         db.session.add(user)
         return [user, token]
 
@@ -114,16 +114,16 @@ class User(db.Model):
         False.
         """
 
-        user = cls.query.filter_by(username=username).first()
+        user = cls.query.filter_by(username=username).one_or_none()
 
         if user:
             is_auth = bcrypt.check_password_hash(user.password, password)
             if is_auth:
-                token = User.token(username)
+                token = jwt.encode({'username': username }, secret_key)
                 return [user, token]
 
         return False
-    
+
     @classmethod
     def create_token(cls, username):
         """Create token for user"""
@@ -131,7 +131,7 @@ class User(db.Model):
         print('secret key', secret_key)
         token = jwt({'username': username }, secret_key)
         return token
-    
+
 
 
 

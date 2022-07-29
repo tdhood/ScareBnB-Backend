@@ -27,7 +27,6 @@ CORS(app)
 # if not set there, use development local db.
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     os.environ['DATABASE_URL'].replace("postgres://", "postgresql://"))
-print(os.environ['DATABASE_URL'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
@@ -40,34 +39,6 @@ connect_db(app)
 
 #############################################################################
 # User signup/login/logout
-
-
-
-#for reference, since we plan to serve front-end through react
-# most likely wont use or need these
-# @app.before_request
-# def add_user_to_g():
-#     """If we're logged in, add curr user to Flask global."""
-
-#     if CURR_USER_KEY in session:
-#         g.user = User.query.get(session[CURR_USER_KEY])
-
-#     else:
-#         g.user = None
-
-# api won't track login status
-# def do_login(user):
-#     """Log in user."""
-
-#     session[CURR_USER_KEY] = user.id
-
-# api won't track login status
-# def do_logout():
-#     """Log out user."""
-
-#     if CURR_USER_KEY in session:
-#         del session[CURR_USER_KEY]
-
 
 @app.route('/signup', methods=["GET", "POST"])
 def signup():
@@ -115,66 +86,41 @@ def signup():
             db.session.commit()
 
             serialized = user[0].serialize()
-        
-            return jsonify(user=serialized, token=user[1]) 
+
+            return jsonify(user=serialized, token=user[1])
 
         except ClientError as e:
             #TODO: default image
             return jsonify(e)
-        
+
     return jsonify(errors=form.errors)
 
-        
-    
-
-# @app.route('/register', methods=['GET', 'POST'])
-# def signup_user():
-#  data = request.get_json()
-
-#  hashed_password = generate_password_hash(data['password'], method='sha256')
-
-#  new_user = Users( 
-#     first_name=data['first name'], 
-#     password=hashed_password, 
-#     is_host=False)
-#  db.session.add(new_user)
-#  db.session.commit()
-
-#  return jsonify({'message': 'registered successfully'})
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
     """Handle user login and redirect to homepage on success."""
 
-    form = LoginForm()
+    received = request.json
+    form = LoginForm(csrf_enabled=False, data=received)
 
     if form.validate_on_submit():
+        username = received["username"]
+        password = received["password"]
+
         user = User.authenticate(
-            form.username.data,
-            form.password.data)
+            username,
+            password)
 
-        if user:
-            do_login(user)
-            flash(f"Hello, {user.username}!", "success")
-            return redirect("/")
+        if user[0]:
+            serialized = user[0].serialize()
 
-        flash("Invalid credentials.", 'danger')
-
-    return render_template('users/login.html', form=form)
+            return jsonify(user=serialized, token=user[1])
+        else:
+            return jsonify({"msg": 'failed to login username or password is invalid'})
 
 
-@app.post('/logout')
-def logout():
-    """Handle logout of user and redirect to homepage."""
+    return jsonify(errors=form.errors)
 
-    if CURR_USER_KEY in session:
-        form = g.csrf_form
-
-        if form.validate_on_submit():
-            do_logout()
-            flash("You've been logged out")
-
-    return redirect("/")
 
 
 ##############################################################################
