@@ -11,6 +11,8 @@ load_dotenv()
 # ALEX_BUCKET = "share-b-n-b"
 # TAYLOR_BUCKET = "kestrelbucket"
 BUCKET = os.environ['BUCKET']
+FOLDER = 'scarebnb/'
+print('bucket name', BUCKET)
 
 def upload_file(file_name, bucket=BUCKET, object_name=None):
     """Upload a file to an S3 bucket
@@ -29,8 +31,8 @@ def upload_file(file_name, bucket=BUCKET, object_name=None):
     s3_client = boto3.client('s3')
 
     try:
-        response = s3_client.put_object(Body=file_name, Bucket=bucket, Key=object_name, ContentType='image/jpeg')
-        image = (f'https://{bucket}.s3.amazonaws.com/{object_name}')
+        response = s3_client.put_object(Body=file_name, Bucket=BUCKET, Key=object_name, ContentType='image/jpeg')
+        image = (f'https://{BUCKET}/{FOLDER}.s3.amazonaws.com/{object_name}')
     except ClientError as e:
         logging.error(e)
         return False
@@ -45,17 +47,17 @@ def upload_file(file_name, bucket=BUCKET, object_name=None):
 #     with open('FILE_NAME', 'wb') as f:
 #         s3.download_fileobj('BUCKET_NAME', 'OBJECT_NAME', f)
 
-def show_image(bucket=BUCKET):
+def show_images(bucket=BUCKET):
+    print('show_image')
     s3_client = boto3.client('s3')
-    public_urls = []
+    image_urls = []
+    print('s3_client', s3_client.list_objects(Bucket=BUCKET, Prefix=(FOLDER+'/')))
     try:
-        for item in s3_client.list_objects(Bucket=bucket)['Contents']:
-            presigned_url = s3_client.generate_presigned_url('get_object', Params = {'Bucket': bucket, 'Key': item['Key']})
-            public_urls.append(presigned_url)
+        for item in s3_client.list_objects(Bucket=BUCKET, Prefix=FOLDER)['Contents']:
+            presigned_url = s3_client.generate_presigned_url('get_object', Params = {'Bucket': BUCKET, 'Key': item['Key']})
+            image_urls.append(presigned_url)
+        print('image_urls', image_urls)
     except Exception as e:
         pass
-    print("[INFO] : The contents inside show_image = ", public_urls)
-    return public_urls
-
-
-    # ExtraArgs={'ACL': 'public-read'}
+    print("[INFO] : The contents inside show_image = ", image_urls)
+    return image_urls
