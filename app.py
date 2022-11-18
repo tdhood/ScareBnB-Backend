@@ -9,7 +9,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 
 from forms import ListingAddForm, UserAddForm, LoginForm
 from models import db, connect_db, User, Listing
-from aws import upload_file
+from aws import upload_file, show_images
 from botocore.exceptions import ClientError
 from flask_cors import CORS
 
@@ -19,6 +19,7 @@ import jwt
 load_dotenv()
 
 CURR_USER_KEY = "curr_user"
+BUCKET = os.environ['BUCKET']
 
 app = Flask(__name__)
 CORS(app)
@@ -138,12 +139,13 @@ def login():
 def all_listings():
     """returns JSON for all available properties
     [{id, title, description, price, image[], user_id, rating}]"""
-
+    image_urls = show_images(bucket=BUCKET)
+    print('image_urls', image_urls)
     listings = Listing.query.all()
     serialized = [l.serialize() for l in listings]
-
+    print('listings', listings)
+    
     return jsonify(listings=serialized)
-
 
 @app.get('/listing/<int:id>')
 def single_listing(id):
@@ -164,7 +166,7 @@ def create_listing():
     received = json.loads(request.form.get('data'))
     files = request.files['files']
     image_url = ''
-    # form = ListingAddForm(csrf_enabled=False, data=received)
+    form = ListingAddForm(csrf_enabled=False, data=received)
 
 
     if True: #FIXME: validate data being received
@@ -184,9 +186,10 @@ def create_listing():
         listing = Listing(
             title=title,
             description=description,
+            object_name=image_url[1],
             location=location,
             price=price,
-            image_url=image_url,
+            image_url=image_url[0],
             user_id=user_id,
             rating=rating
         )
