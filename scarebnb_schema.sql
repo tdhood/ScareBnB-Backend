@@ -13,6 +13,7 @@ CREATE TABLE users (
 CREATE TABLE listings (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL,
+  object_name TEXT NOT NULL,
   location TEXT NOT NULL,
   description TEXT NOT NULL,
   price INTEGER NOT NULL,

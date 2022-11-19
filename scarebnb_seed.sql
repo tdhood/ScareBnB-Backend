@@ -1,13 +1,13 @@
 
 INSERT INTO users (email, username, first_name, last_name, bio, password, is_host)
-VALUES ('joel@joelburton.com',
+VALUES ('user@email.com',
         'testuser',
         'Test',
         'User',
         'test bio',
         'password',
         FALSE),
-       ('test@host.com',
+       ('host@host.com',
         'hostuser',
         'Host',
         'User2',
@@ -15,8 +15,9 @@ VALUES ('joel@joelburton.com',
         '$2b$12$AZH7virni5jlTTiGgEg4zu3lSvAw68qVEfSIOjJ3RqtbJbdW/Oi5q',
         TRUE);
 
-INSERT INTO listings (title, location, description, price, image_url, rating, user_id)
+INSERT INTO listings (title, object_name, location, description, price, image_url, rating, user_id)
 VALUES('Hauntingly Isolated',
+        'lakehouse',
         'Remote',
     'No one can hear you scream',
     200,
