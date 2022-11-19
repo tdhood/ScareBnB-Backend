@@ -19,31 +19,33 @@ import jwt
 load_dotenv()
 
 CURR_USER_KEY = "curr_user"
-BUCKET = os.environ['BUCKET']
+BUCKET = os.environ["BUCKET"]
 
 app = Flask(__name__)
 CORS(app)
 
 # Get DB_URI from environ variable (useful for production/testing) or,
 # if not set there, use development local db.
-app.config['SQLALCHEMY_DATABASE_URI'] = (
-    os.environ['DATABASE_URL'].replace("postgres://", "postgresql://"))
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ECHO'] = False
-app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
-app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ["DATABASE_URL"].replace(
+    "postgres://", "postgresql://"
+)
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_ECHO"] = False
+app.config["DEBUG_TB_INTERCEPT_REDIRECTS"] = True
+app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
 toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
 
-# BASE_IMAGE_URL = 'https://share-b-n-b.s3.us-west-1.amazonaws.com/'
+BASE_IMAGE_URL = "https://kestrelbucket.s3.amazonaws.com/scarebnb/defaulthouse.png"
 
 #############################################################################
 # User signup/login/logout
 
-@app.route('/signup', methods=["GET", "POST"])
+
+@app.route("/signup", methods=["GET", "POST"])
 def signup():
-    print('signup route')
+    print("signup route")
     """Handle user signup.
 
     Create new user and add to DB. Redirect to home page.
@@ -57,11 +59,11 @@ def signup():
     # if CURR_USER_KEY in session:
     #     del session[CURR_USER_KEY]
     received = request.json
-    print('received', received)
+    print("received", received)
     form = UserAddForm(csrf_enabled=False, data=received)
-    print('form=', form)
+    print("form=", form)
     print("username", received["username"])
-    print('password', received["password"])
+    print("password", received["password"])
 
     if form.validate_on_submit():
         username = received["username"]
@@ -91,13 +93,13 @@ def signup():
             return jsonify(user=serialized, token=user[1])
 
         except ClientError as e:
-            #TODO: default image
+            # TODO: default image
             return jsonify(e)
 
     return jsonify(errors=form.errors)
 
 
-@app.route('/login', methods=["GET", "POST"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
     """Handle user login and redirect to homepage on success."""
 
@@ -108,20 +110,16 @@ def login():
         username = received["username"]
         password = received["password"]
 
-        user = User.authenticate(
-            username,
-            password)
+        user = User.authenticate(username, password)
 
         if user[0]:
             serialized = user[0].serialize()
 
             return jsonify(user=serialized, token=user[1])
         else:
-            return jsonify({"msg": 'failed to login username or password is invalid'})
-
+            return jsonify({"msg": "failed to login username or password is invalid"})
 
     return jsonify(errors=form.errors)
-
 
 
 ##############################################################################
@@ -135,22 +133,24 @@ def login():
 
 # TODO: homepage  individualListings
 
-@app.get('/')
+
+@app.get("/")
 def all_listings():
     """returns JSON for all available properties
     [{id, title, description, price, image[], user_id, rating}]"""
     image_urls = show_images(bucket=BUCKET)
-    print('image_urls', image_urls)
+    print("image_urls", image_urls)
     listings = Listing.query.all()
     serialized = [l.serialize() for l in listings]
-    print('listings', listings)
-    
+    print("listings", listings)
+
     return jsonify(listings=serialized)
 
-@app.get('/listing/<int:id>')
+
+@app.get("/listing/<int:id>")
 def single_listing(id):
     """returns detailed info on single listing as JSON
-    {id, title, description, price, image[], user_id, rating} """
+    {id, title, description, price, image[], user_id, rating}"""
 
     listing = Listing.query.get_or_404(id)
     serialized = listing.serialize()
@@ -158,29 +158,32 @@ def single_listing(id):
     return jsonify(listing=serialized)
 
 
-
-@app.post('/listing')
+@app.post("/listing")
 def create_listing():
-    """Create new listing for property"""
+    """Create new listing for property
 
-    received = json.loads(request.form.get('data'))
-    files = request.files['files']
-    image_url = ''
-    form = ListingAddForm(csrf_enabled=False, data=received)
+    Takes Json {data: {title, description, location, price, user_id, rating, files: "string of image file path"}
 
+    Returns Json {listing: {id, description, price, rating, title, user_id}}"""
 
-    if True: #FIXME: validate data being received
-        title = received["title"]
-        description = received["description"]
-        location = received["location"]
-        price = received["price"]
-        user_id = received["user_id"]
-        rating = received["rating"]
+    image_url = ""
+
+    form = ListingAddForm(csrf_enabled=False)
+    
+    if form.validate_on_submit():
+        title = form.data["title"]
+        description = form.data["description"]
+        location = form.data["location"]
+        price = form.data["price"]
+        user_id = form.data["user_id"]
+        rating = form.data["rating"]
+        files = form.data["files"]
 
         try:
             image_url = upload_file(files)
+            print("image_url", image_url)
         except ClientError as e:
-            #TODO: default image
+            # TODO: default image
             print(e)
 
         listing = Listing(
@@ -191,11 +194,9 @@ def create_listing():
             price=price,
             image_url=image_url[0],
             user_id=user_id,
-            rating=rating
+            rating=rating,
         )
 
-
-        print(listing)
         db.session.add(listing)
         db.session.commit()
 
@@ -203,15 +204,12 @@ def create_listing():
 
         return jsonify(listing=serialized)
 
-    #return jsonify(errors=form.errors) FIXME:
+    return jsonify(errors=form.errors)
 
+    # @app.patch('/listing/<int:id>')
+    # def edit_listing():
+    #     """update listing"""
 
-
-# @app.patch('/listing/<int:id>')
-# def edit_listing():
-#     """update listing"""
-
-
-# @app.delete('/listing/<int:id>')
-# def delete_listing():
+    # @app.delete('/listing/<int:id>')
+    # def delete_listing():
     """Delete listing from database"""
