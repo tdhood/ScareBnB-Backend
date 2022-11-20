@@ -23,8 +23,7 @@ def upload_file(file_name, bucket=BUCKET, object_name=None):
     :param object_name: S3 object name. If not specified then file_name is used
     :return: True if file was uploaded, else False
     """
-    print("bucket", BUCKET)
-    print('file_name', file_name)
+    
     # If S3 object_name was not specified, use file_name
     if object_name is None:
         object_name = f"{FOLDER}/"+str(uuid.uuid4())
@@ -47,16 +46,6 @@ def upload_file(file_name, bucket=BUCKET, object_name=None):
         return False
     print('image', image, 'object_name', object_name)
     return [image, object_name]
-
-
-# def download_file(file_name, bucket, object_name):
-#     s3 = boto3.client('s3')
-#     s3.download_file('BUCKET_NAME', 'OBJECT_NAME', 'FILE_NAME')
-# # The download_fileobj method accepts a writeable file-like object. The file object must be opened in binary mode, not text mode.
-
-#     s3 = boto3.client('s3')
-#     with open('FILE_NAME', 'wb') as f:
-#         s3.download_fileobj('BUCKET_NAME', 'OBJECT_NAME', f)
 
 
 def show_images(bucket=BUCKET):
