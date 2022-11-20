@@ -23,7 +23,7 @@ def upload_file(file_name, bucket=BUCKET, object_name=None):
     :param object_name: S3 object name. If not specified then file_name is used
     :return: True if file was uploaded, else False
     """
-    
+
     # If S3 object_name was not specified, use file_name
     if object_name is None:
         object_name = f"{FOLDER}/"+str(uuid.uuid4())
@@ -48,21 +48,19 @@ def upload_file(file_name, bucket=BUCKET, object_name=None):
     return [image, object_name]
 
 
-def show_images(bucket=BUCKET):
-    print("show_image")
+def get_images(bucket=BUCKET):
+
     s3_client = boto3.client("s3")
     image_urls = []
-    # print("s3_client", s3_client.list_objects(Bucket=BUCKET, Prefix=(FOLDER + "/")))
     try:
         for item in s3_client.list_objects(Bucket=BUCKET, Prefix=FOLDER)["Contents"]:
             presigned_url = s3_client.generate_presigned_url(
                 "get_object", Params={"Bucket": BUCKET, "Key": item["Key"]}
             )
             image_urls.append(presigned_url)
-        # print("image_urls", image_urls)
     except Exception as e:
-        pass
-    # print("[INFO] : The contents inside show_image = ", image_urls)
+        print(f"errors: {e}")
+        logging.error(e)
     return image_urls[1:]
 
 show_images(BUCKET)
