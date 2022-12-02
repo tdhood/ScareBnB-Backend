@@ -8,15 +8,19 @@ import jwt
 
 load_dotenv()
 
-secret_key= os.environ['SECRET_KEY']
+secret_key = os.environ["SECRET_KEY"]
 bcrypt = Bcrypt()
 db = SQLAlchemy()
+
+DEFAULT_HOUSE_IMAGE_URL = (
+    "https://kestrelbucket.s3.amazonaws.com/scarebnb/defaulthouse.png"
+)
 
 
 class User(db.Model):
     """User in the system."""
 
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     id = db.Column(
         db.Integer,
@@ -41,10 +45,7 @@ class User(db.Model):
         nullable=False,
     )
 
-    last_name = db.Column(
-        db.Text,
-        nullable=False
-    )
+    last_name = db.Column(db.Text, nullable=False)
 
     # image_url = db.Column(
     #     db.Text,
@@ -76,18 +77,20 @@ class User(db.Model):
             "first_name": self.first_name,
             "last_name": self.last_name,
             "bio": self.bio,
-            "is_host": self.is_host
+            "is_host": self.is_host,
         }
 
     @classmethod
-    def signup(cls, username, email, password, first_name, last_name, bio, is_host=False):
+    def signup(
+        cls, username, email, password, first_name, last_name, bio, is_host=False
+    ):
         """Sign up user.
 
         Hashes password and adds user to system.
         """
-        print('password', password)
-        hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
-        print('hashed', hashed_pwd)
+        print("password", password)
+        hashed_pwd = bcrypt.generate_password_hash(password).decode("UTF-8")
+        print("hashed", hashed_pwd)
         user = User(
             username=username,
             email=email,
@@ -95,9 +98,9 @@ class User(db.Model):
             first_name=first_name,
             last_name=last_name,
             bio=bio,
-            is_host=is_host
+            is_host=is_host,
         )
-        token = jwt.encode({'username': username }, secret_key)
+        token = jwt.encode({"username": username}, secret_key)
 
         db.session.add(user)
         return [user, token]
@@ -119,7 +122,7 @@ class User(db.Model):
         if user:
             is_auth = bcrypt.check_password_hash(user.password, password)
             if is_auth:
-                token = jwt.encode({'username': username }, secret_key)
+                token = jwt.encode({"username": username}, secret_key)
                 return [user, token]
 
         return False
@@ -127,18 +130,16 @@ class User(db.Model):
     @classmethod
     def create_token(cls, username):
         """Create token for user"""
-        print('create_token')
-        print('secret key', secret_key)
-        token = jwt({'username': username }, secret_key)
+        print("create_token")
+        print("secret key", secret_key)
+        token = jwt({"username": username}, secret_key)
         return token
-
-
 
 
 class Listing(db.Model):
     """An individual property listings."""
 
-    __tablename__ = 'listings'
+    __tablename__ = "listings"
 
     id = db.Column(
         db.Integer,
@@ -148,6 +149,10 @@ class Listing(db.Model):
 
     title = db.Column(
         db.String(20),
+        nullable=False,
+    )
+    object_name = db.Column(
+        db.Text,
         nullable=False,
     )
 
@@ -168,12 +173,12 @@ class Listing(db.Model):
 
     image_url = db.Column(
         db.Text,
-        nullable=False
+        default=DEFAULT_HOUSE_IMAGE_URL,
     )
 
     user_id = db.Column(
         db.Integer,
-        db.ForeignKey('users.id', ondelete='CASCADE'),
+        db.ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
 
@@ -182,6 +187,11 @@ class Listing(db.Model):
         nullable=False,
     )
 
+    def __repr__(self):
+        return (
+            f"<Listing #{self.id}: title: {self.title}, object_name: {self.object_name}"
+        )
+
     def serialize(self):
         """Serialize to dictionary."""
 
@@ -189,11 +199,16 @@ class Listing(db.Model):
             "id": self.id,
             "title": self.title,
             "description": self.description,
+            "object_name": self.object_name,
             "price": self.price,
             "image_url": self.image_url,
             "user_id": self.user_id,
             "rating": self.rating,
         }
+
+
+class Favorite(db.Model):
+    """Favorite listings for a user"""
 
 
 def connect_db(app):

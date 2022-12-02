@@ -63,6 +63,6 @@ class ListingAddForm(FlaskForm):
     image_file = StringField('image_file', validators=[Optional()])
     rating = IntegerField('Rating', validators=[Optional()])
     user_id = IntegerField('User id', validators=[InputRequired()])
-    files = FileField('Files', validators=[])
+    files = FileField('Files', validators=[Optional()])
 
 
