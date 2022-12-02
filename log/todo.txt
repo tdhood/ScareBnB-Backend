@@ -4,15 +4,6 @@
 
 - listing outline
 
-- routes
-
-- photos
-
-- aws integration
-
-- seed data
-
-- front end
 
 further study
     -map
@@ -21,15 +12,15 @@ further study
 
 More Items:
 -search feature
--liked items and storage
+-liked items and storage(favorites)
 -user profile
--list of listing (with search)
+-list of listing (with search) (add tags?)
 
--messaging between users
 
 
 Pages:
 -login/signup page
+-favorites
 
 
 -list of listing (homepage) - no authentication

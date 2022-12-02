@@ -9,7 +9,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 
 from forms import ListingAddForm, UserAddForm, LoginForm
 from models import db, connect_db, User, Listing
-from aws import upload_file, show_images
+from aws import upload_file, get_images
 from botocore.exceptions import ClientError
 from flask_cors import CORS
 
@@ -138,11 +138,9 @@ def login():
 def all_listings():
     """returns JSON for all available properties
     [{id, title, description, price, image[], user_id, rating}]"""
-    image_urls = show_images(bucket=BUCKET)
-    print("image_urls", image_urls)
+    image_urls = get_images(bucket=BUCKET)
     listings = Listing.query.all()
     serialized = [l.serialize() for l in listings]
-    print("listings", listings)
 
     return jsonify(listings=serialized)
 
@@ -212,4 +210,18 @@ def create_listing():
 
     # @app.delete('/listing/<int:id>')
     # def delete_listing():
-    """Delete listing from database"""
+    # """Delete listing from database"""
+
+################################################################################
+#Favorites
+@app.get("user/<int:user_id>/favorites")
+def all_listings():
+    """returns JSON for all available properties
+    [{id, title, description, price, image[], user_id, rating}]"""
+    image_urls = show_images(bucket=BUCKET)
+    print("image_urls", image_urls)
+    listings = Listing.query.all()
+    serialized = [l.serialize() for l in listings]
+    print("listings", listings)
+
+    return jsonify(listings=serialized)
