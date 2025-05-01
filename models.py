@@ -13,7 +13,7 @@ bcrypt = Bcrypt()
 db = SQLAlchemy()
 
 DEFAULT_HOUSE_IMAGE_URL = (
-    "https://kestrelbucket.s3.amazonaws.com/scarebnb/defaulthouse.png"
+    "https://scare-bnb.sfo2.digitaloceanspaces.com/horror-flick-abandoned-home.jpg"
 )
 
 
@@ -207,8 +207,8 @@ class Listing(db.Model):
         }
 
 
-class Favorite(db.Model):
-    """Favorite listings for a user"""
+# class Favorite(db.Model):
+#     """Favorite listings for a user"""
 
 
 def connect_db(app):
