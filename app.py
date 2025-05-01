@@ -9,7 +9,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 
 from forms import ListingAddForm, UserAddForm, LoginForm
 from models import db, connect_db, User, Listing
-from aws import upload_file, get_images
+from s3 import upload_file, get_images
 from botocore.exceptions import ClientError
 from flask_cors import CORS
 
@@ -215,7 +215,7 @@ def create_listing():
 
 ################################################################################
 #Favorites
-@app.get("user/<int:user_id>/favorites")
+@app.get("/user/<int:user_id>/favorites")
 def all_listings():
     """returns JSON for all available properties
     [{id, title, description, price, image[], user_id, rating}]"""
