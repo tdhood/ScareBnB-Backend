@@ -226,3 +226,4 @@ def all_listings():
     print("listings", listings)
 
     return jsonify(listings=serialized)
+
