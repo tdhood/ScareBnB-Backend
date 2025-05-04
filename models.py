@@ -1,4 +1,4 @@
-"""SQLAlchemy models for ShareBnB."""
+"""SQLAlchemy models for ScareBnB."""
 
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
@@ -12,9 +12,9 @@ secret_key = os.environ["SECRET_KEY"]
 bcrypt = Bcrypt()
 db = SQLAlchemy()
 
-DEFAULT_HOUSE_IMAGE_URL = (
-    "https://scare-bnb.sfo2.digitaloceanspaces.com/horror-flick-abandoned-home.jpg"
-)
+# DEFAULT_HOUSE_IMAGE_URL = (
+#     "https://scare-bnb.sfo2.digitaloceanspaces.com/horror-flick-abandoned-home.jpg"
+# )
 
 
 class User(db.Model):
@@ -26,6 +26,7 @@ class User(db.Model):
         db.Integer,
         primary_key=True,
         autoincrement=True,
+        nullable=False,
     )
 
     email = db.Column(
@@ -173,10 +174,9 @@ class Listing(db.Model):
 
     image_url = db.Column(
         db.Text,
-        default=DEFAULT_HOUSE_IMAGE_URL,
     )
 
-    user_id = db.Column(
+    host_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
@@ -200,15 +200,47 @@ class Listing(db.Model):
             "title": self.title,
             "description": self.description,
             "object_name": self.object_name,
+            "host": self.host_id,
             "price": self.price,
             "image_url": self.image_url,
-            "user_id": self.user_id,
             "rating": self.rating,
         }
 
 
-# class Favorite(db.Model):
-#     """Favorite listings for a user"""
+class Favorite(db.Model):
+    """Favorite listings for a user"""
+
+    __tablename__ = "favorites"
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+
+    listing_id = db.Column(
+        db.Integer,
+        db.ForeignKey("listing.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+
+    def serialize(self):
+        """Serialize to dictionary."""
+
+        return {
+            "id": self.id,
+            "user": self.user_id,
+            "listing": self.listing_id,
+        }
+
+    
+
 
 
 def connect_db(app):
