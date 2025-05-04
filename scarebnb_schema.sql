@@ -11,7 +11,7 @@ CREATE TABLE users (
 );
 
 CREATE TABLE listings (
-  id SERIAL PRIMARY KEY,
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
   object_name TEXT NOT NULL,
   location TEXT NOT NULL,
