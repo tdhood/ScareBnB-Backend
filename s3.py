@@ -1,10 +1,11 @@
+
 import logging
 from re import S
-import boto3
-from botocore.exceptions import ClientError
-from botocore.client import Config
+import boto3 # type: ignore
+from botocore.exceptions import ClientError # type: ignore
+from botocore.client import Config # type: ignore
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv # type: ignore
 import uuid
 
 # from filestorage import store
@@ -16,7 +17,9 @@ load_dotenv()
 DO_SPACES_KEY = os.environ["DO_ACCESS_KEY"]
 DO_SPACES_SECRET = os.environ["DO_SECRET_KEY"]
 DO_REGION = os.environ["DO_REGION"]  # or sgp1, fra1, etc.
-DO_ENDPOINT = f"https://{DO_REGION}.digitaloceanspaces.com"
+DO_ENDPOINT = os.environ["DO_ENDPOINT_URL"]
+BUCKET = os.environ["BUCKET"]
+FOLDER = os.environ["FOLDER"]
 
 session = boto3.session.Session()
 
@@ -29,10 +32,16 @@ s3 = session.client(
     config=Config(signature_version='s3v4')
 )
 
+try:
+    response = s3.list_objects_v2(Bucket=BUCKET)
+    print(f"✅ Successfully accessed bucket '{BUCKET}'")
+except ClientError as e:
+    print("❌ Error accessing bucket:", e)
 
-BUCKET = os.environ["BUCKET"]
-FOLDER = os.environ["FOLDER"]
-print("bucket name", BUCKET)
+
+# BUCKET = os.environ["BUCKET"]
+# FOLDER = os.environ["FOLDER"]
+# print("bucket name", BUCKET)
 
 
 def upload_file(file_name, bucket=BUCKET, object_name=None):
@@ -48,10 +57,8 @@ def upload_file(file_name, bucket=BUCKET, object_name=None):
     if object_name is None:
         object_name = f"{FOLDER}/"+str(uuid.uuid4())
 
-    s3_client = boto3.client("s3")
-
     try:
-        response = s3_client.upload_file(
+        response = s3.upload_file(
             file_name,
             BUCKET,
             object_name,
@@ -60,7 +67,7 @@ def upload_file(file_name, bucket=BUCKET, object_name=None):
         )
 
         print('response', response)
-        image = f"https://{BUCKET}sfo2.digitaloceanspaces.com/{object_name}"
+        image = f"https://{BUCKET}.sfo2.digitaloceanspaces.com/{object_name}"
     except ClientError as e:
         print('Image did not upload')
         logging.error(e)
@@ -71,17 +78,17 @@ def upload_file(file_name, bucket=BUCKET, object_name=None):
 
 def get_images(bucket=BUCKET):
 
-    s3_client = boto3.client("s3")
     image_urls = []
     try:
-        for item in s3_client.list_objects(Bucket=BUCKET, Prefix=FOLDER)["Contents"]:
-            presigned_url = s3_client.generate_presigned_url(
+        for item in s3.list_objects(Bucket=BUCKET, Prefix=FOLDER)["Contents"]:
+            presigned_url = s3.generate_presigned_url(
                 "get_object", Params={"Bucket": BUCKET, "Key": item["Key"]}
             )
             image_urls.append(presigned_url)
     except Exception as e:
         print(f"errors: {e}")
         logging.error(e)
+      
     return image_urls[1:]
 
 get_images(BUCKET)
