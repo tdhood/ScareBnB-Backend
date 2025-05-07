@@ -1,5 +1,5 @@
 CREATE TABLE users (
-  id SERIAL PRIMARY KEY,
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
   email TEXT NOT NULL
     CHECK (email LIKE '%@%' AND email NOT LIKE '@%'),
   username TEXT NOT NULL,
@@ -19,6 +19,6 @@ CREATE TABLE listings (
   price INTEGER NOT NULL,
   image_url TEXT NOT NULL,
   rating INTEGER NOT NULL,
-  user_id INTEGER NOT NULL
+  host_id INTEGER NOT NULL
     REFERENCES users ON DELETE CASCADE
 );
