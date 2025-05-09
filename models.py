@@ -119,6 +119,7 @@ class User(db.Model):
         """
 
         user = cls.query.filter_by(username=username).one_or_none()
+        print('do i find guest?', user)
 
         if user:
             is_auth = bcrypt.check_password_hash(user.password, password)
@@ -251,3 +252,5 @@ def connect_db(app):
 
     db.app = app
     db.init_app(app)
+
+

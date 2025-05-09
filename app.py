@@ -20,14 +20,13 @@ load_dotenv()
 CURR_USER_KEY = "curr_user"
 BUCKET = os.environ["BUCKET"]
 
+
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
 
 # Get DB_URI from environ variable (useful for production/testing) or,
 # if not set there, use development local db.
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ["DATABASE_URL"].replace(
-    "sqlite3:///", "sqlite3:///"
-)
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///scarebnb.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = False
 app.config["DEBUG_TB_INTERCEPT_REDIRECTS"] = True
@@ -36,12 +35,33 @@ toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
 
-BUCKET_URL = "https://scare-bnb.sfo2.digitaloceanspaces.com"
+BUCKET_URL = os.environ["DO_URL"]
 
-BASE_IMAGE_URL = "https://scare-bnb.sfo2.digitaloceanspaces.com/horror-flick-abandoned-home.jpg"
+# if __name__ == "__main__":
+#     app.run(host="localhost", port=5000, debug=True)
+
+
+# BASE_IMAGE_URL = "https://scare-bnb.sfo2.digitaloceanspaces.com/horror-flick-abandoned-home.jpg"
 
 #############################################################################
 # User signup/login/logout
+
+
+
+@app.route("/guest", methods=["GET"])
+def is_guest():
+    print("guest route")
+    """Handle guest auth"""
+
+    username = 'guest'
+    password = 'guest'
+    
+    guest = User.authenticate(username, password)
+
+    if guest:
+        return jsonify(user=guest[0].serialize(), token=guest[1])
+    return jsonify({"error": "Guest authentication failed"}), 401
+
 
 
 @app.route("/signup", methods=["GET", "POST"])
@@ -60,11 +80,8 @@ def signup():
     # if CURR_USER_KEY in session:
     #     del session[CURR_USER_KEY]
     received = request.json
-    print("received", received)
+    
     form = UserAddForm(csrf_enabled=False, data=received)
-    print("form=", form)
-    print("username", received["username"])
-    print("password", received["password"])
 
     if form.validate_on_submit():
         username = received["username"]
@@ -129,81 +146,94 @@ def login():
 # TODO: HostMessaging  UserProfile  UserLikes
 
 
+@app.get("/guest/listings")
+def guest_listings():
+    """returns JSON for all available properties
+    [{id, title, description, price, image[], host_id, rating}]"""
+    image_urls = get_images(bucket=BUCKET)
+    listings = Listing.query.all()
+    print('listings:', listings)
+    serialized = [l.serialize() for l in listings]
+
+    return jsonify(listings=serialized)
+
 ###############################################################################
 # Listing routes:
 
 # TODO: homepage  individualListings
 
 
-@app.get("/")
-def all_listings():
-    """returns JSON for all available properties
-    [{id, title, description, price, image[], user_id, rating}]"""
-    image_urls = get_images(bucket=BUCKET)
-    listings = Listing.query.all()
-    serialized = [l.serialize() for l in listings]
+# @app.get("/guest")
+# def all_listings():
+#     """returns JSON for all available properties
+#     [{id, title, description, price, image[], user_id, rating}]"""
+#     image_urls = get_images(bucket=BUCKET)
+#     listings = Listing.query.all()
+#     print('listings:', listings)
+#     serialized = [l.serialize() for l in listings]
 
-    return jsonify(listings=serialized)
-
-
-@app.get("/listing/<int:id>")
-def single_listing(id):
-    """returns detailed info on single listing as JSON
-    {id, title, description, price, image[], user_id, rating}"""
-
-    listing = Listing.query.get_or_404(id)
-    serialized = listing.serialize()
-
-    return jsonify(listing=serialized)
+#     return jsonify(listings=serialized)
 
 
-@app.post("/listing")
-def create_listing():
-    """Create new listing for property
 
-    Takes Json {data: {title, description, location, price, user_id, rating, files: "string of image file path"}
+# @app.get("/listing/<int:id>")
+# def single_listing(id):
+#     """returns detailed info on single listing as JSON
+#     {id, title, description, price, image[], user_id, rating}"""
 
-    Returns Json {listing: {id, description, price, rating, title, user_id}}"""
+#     listing = Listing.query.get_or_404(id)
+#     serialized = listing.serialize()
 
-    image_url = ""
+#     return jsonify(listing=serialized)
 
-    form = ListingAddForm(csrf_enabled=False)
+
+# @app.post("/listing")
+# def create_listing():
+#     """Create new listing for property
+
+#     Takes Json {data: {title, description, location, price, user_id, rating, files: "string of image file path"}
+
+#     Returns Json {listing: {id, description, price, rating, title, user_id}}"""
+
+#     image_url = ""
+
+#     form = ListingAddForm(csrf_enabled=False)
     
-    if form.validate_on_submit():
-        title = form.data["title"]
-        description = form.data["description"]
-        location = form.data["location"]
-        price = form.data["price"]
-        user_id = form.data["user_id"]
-        rating = form.data["rating"]
-        files = form.data["files"]
+#     if form.validate_on_submit():
+#         title = form.data["title"]
+#         description = form.data["description"]
+#         location = form.data["location"]
+#         price = form.data["price"]
+#         user_id = form.data["user_id"]
+#         rating = form.data["rating"]
+#         files = form.data["files"]
 
-        try:
-            image_url = upload_file(files)
-            print("image_url", image_url)
-        except ClientError as e:
-            # TODO: default image
-            print(e)
+#         try:
+#             image_url = upload_file(files)
+#             print("image_url", image_url)
+#         except ClientError as e:
+#             # TODO: default image
+#             print(e)
 
-        listing = Listing(
-            title=title,
-            description=description,
-            object_name=image_url[1],
-            location=location,
-            price=price,
-            image_url=image_url[0],
-            user_id=user_id,
-            rating=rating,
-        )
+#         listing = Listing(
+#             title=title,
+#             description=description,
+#             object_name=image_url[1],
+#             location=location,
+#             price=price,
+#             image_url=image_url[0],
+#             user_id=user_id,
+#             rating=rating,
+#         )
 
-        db.session.add(listing)
-        db.session.commit()
+#         db.session.add(listing)
+#         db.session.commit()
 
-        serialized = listing.serialize()
+#         serialized = listing.serialize()
 
-        return jsonify(listing=serialized)
+#         return jsonify(listing=serialized)
 
-    return jsonify(errors=form.errors)
+#     return jsonify(errors=form.errors)
 
     # @app.patch('/listing/<int:id>')
     # def edit_listing():
@@ -215,15 +245,14 @@ def create_listing():
 
 ################################################################################
 #Favorites
-@app.get("/user/<int:user_id>/favorites")
-def all_listings():
-    """returns JSON for all available properties
-    [{id, title, description, price, image[], user_id, rating}]"""
-    image_urls = show_images(bucket=BUCKET)
-    print("image_urls", image_urls)
-    listings = Listing.query.all()
-    serialized = [l.serialize() for l in listings]
-    print("listings", listings)
+# @app.get("/user/<int:user_id>/favorites")
+# def all_listings():
+#     """returns JSON for all available properties
+#     [{id, title, description, price, image[], user_id, rating}]"""
+#     image_urls = get_images(bucket=BUCKET)
+#     print("image_urls", image_urls)
+#     listings = Listing.query.all()
+#     serialized = [l.serialize() for l in listings]
+#     print("listings", listings)
 
-    return jsonify(listings=serialized)
-
+#     return jsonify(listings=serialized)
